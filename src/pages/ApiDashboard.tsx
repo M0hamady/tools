@@ -27,7 +27,7 @@ const ApiDashboard: React.FC = () => {
   useEffect(() => {
     const fetchApis = async () => {
       try {
-        const res = await axios.get("http://127.0.0.1:8000/api/apis/");
+        const res = await axios.get("https://tools-three-opal.vercel.app/api/apis/");
         setApis(res.data);
       } catch (err) {
         console.error("Error fetching APIs", err);
@@ -41,7 +41,7 @@ const ApiDashboard: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://127.0.0.1:8000/api/endpoints/?api=${api.id}`
+        `https://tools-three-opal.vercel.app/api/endpoints/?api=${api.id}`
       );
       setEndpoints(res.data);
       console.log("Fetched endpoints:", res.data); // Debug log

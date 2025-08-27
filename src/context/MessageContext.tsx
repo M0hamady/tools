@@ -86,7 +86,7 @@ const updateSenderBalance = (
     setLoading(true);
     try {
       const res = await axios.get<ApiMessageData[]>(
-        "http://127.0.0.1:8000/api/messages/",
+        "https://tools-three-opal.vercel.app/api/messages/",
         {
           headers: { Authorization: `Token ${token}` },
         }
@@ -117,7 +117,7 @@ const sendMessage = async (
 
   try {
     const res = await axios.post<ApiResponse>(
-      "http://127.0.0.1:8000/api/messages/",
+      "https://tools-three-opal.vercel.app/api/messages/",
       formData,
       {
         headers: {
