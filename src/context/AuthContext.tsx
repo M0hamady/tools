@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (username: string, password: string) => {
-    const res = await axios.post("https://tools-three-opal.vercel.app/api/accounts/auth/login/", {
+    const res = await axios.post("https://toolscodeocean.pythonanywhere.com/api/accounts/auth/login/", {
       username,
       password,
     });
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getMyBalance = async () => {
     if (!token || !user) return;
     try {
-      const res = await axios.get("https://tools-three-opal.vercel.app/api/accounts/sender-ids/", {
+      const res = await axios.get("https://toolscodeocean.pythonanywhere.com/api/accounts/sender-ids/", {
         headers: { Authorization: `Token ${token}` },
       });
 
