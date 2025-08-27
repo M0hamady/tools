@@ -1,25 +1,64 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
+import { MessageProvider } from "./context/MessageContext";
+import SenderIds from "./pages/SenderIds";
+import Messages from "./pages/Messages";
+import ApiDashboard from "./pages/ApiDashboard";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+            <MessageProvider>
+
+      <Router>
+        <Routes>
+          {/* Public route */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/documentation" element={<ApiDashboard />} />
+
+          {/* Protected routes */}
+          <Route element={<Layout />}>
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+              />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+              />
+            <Route
+              path="/messages"
+              element={
+                <PrivateRoute>
+                  <Messages  />
+                </PrivateRoute>
+              }
+              />
+            <Route
+              path="/sender-ids"
+              element={
+                <PrivateRoute>
+                  <SenderIds  />
+                </PrivateRoute>
+              }
+              />
+          </Route>
+        </Routes>
+      </Router>
+              </MessageProvider>
+    </AuthProvider>
   );
 }
 
