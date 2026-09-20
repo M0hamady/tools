@@ -1,0 +1,23 @@
+{
+  "name":"codeocean-sales-brain",
+  "version":"0.6.0",
+  "description":"CODEOCEAN Sales Brain - local-first AI sales hunter",
+  "main":"desktop/main.cjs",
+  "author":"CODEOCEAN",
+  "private":true,
+  "scripts":{
+    "start":"electron .",
+    "dist:installer":"electron-builder --win nsis --x64 --config.artifactName=CODEOCEAN-Sales-Brain-Setup-0.6.0.exe",
+    "dist:portable":"electron-builder --win portable --x64 --config.artifactName=CODEOCEAN-Sales-Brain-Portable-0.6.0.exe",
+    "dist:win":"npm run dist:installer && npm run dist:portable"
+  },
+  "devDependencies":{"electron":"^38.0.0","electron-builder":"^26.0.12"},
+  "build":{
+    "appId":"online.codeocean.salesbrain",
+    "productName":"CODEOCEAN Sales Brain",
+    "asar":true,
+    "files":["desktop/**/*","index.html","package.json"],
+    "directories":{"output":"dist-electron"},
+    "nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true,"createDesktopShortcut":true,"createStartMenuShortcut":true,"shortcutName":"CODEOCEAN Sales Brain"}
+  }
+}
