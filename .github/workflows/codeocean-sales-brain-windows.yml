@@ -1,0 +1,83 @@
+name: CODEOCEAN Sales Brain Windows Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codeocean-sales-brain-v0.5-release
+    paths:
+      - "payload/**"
+      - ".github/workflows/codeocean-sales-brain-windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+
+      - name: Restore exact source package
+        shell: pwsh
+        run: |
+          $parts = Get-ChildItem payload\part*.b64 | Sort-Object Name
+          if (-not $parts -or $parts.Count -ne 7) {
+            throw "Expected 7 payload chunks, found $($parts.Count)"
+          }
+          $b64 = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ""
+          [IO.File]::WriteAllBytes("source.zip", [Convert]::FromBase64String($b64))
+          $hash = (Get-FileHash source.zip -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne "1bb5f802d817e87ffde6c1d4dff227f983e9e0872ef3ffbf02aafbbb37bac63c") {
+            throw "Source archive SHA256 mismatch: $hash"
+          }
+          New-Item -ItemType Directory -Force sales-brain | Out-Null
+          Expand-Archive source.zip sales-brain -Force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: sales-brain/package.json
+
+      - name: Install build dependencies
+        working-directory: sales-brain
+        shell: pwsh
+        run: npm install --no-audit --no-fund
+
+      - name: Validate JavaScript
+        working-directory: sales-brain
+        shell: pwsh
+        run: |
+          node --check desktop/main.cjs
+          node --check desktop/preload.cjs
+
+      - name: Build Windows installer
+        working-directory: sales-brain
+        shell: pwsh
+        run: npm run dist:installer
+
+      - name: Build Windows portable app
+        working-directory: sales-brain
+        shell: pwsh
+        run: npm run dist:portable
+
+      - name: Assemble release
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release | Out-Null
+          Copy-Item sales-brain\dist-electron\CODEOCEAN-Sales-Brain-Setup-0.5.0.exe release\ -Force
+          Copy-Item sales-brain\dist-electron\CODEOCEAN-Sales-Brain-Portable-0.5.0.exe release\ -Force
+          Copy-Item source.zip release\CODEOCEAN-Sales-Brain-v0.5-source.zip -Force
+          Get-FileHash release\*.exe -Algorithm SHA256 | Format-Table -AutoSize
+          Get-ChildItem release | Select-Object Name,Length | Format-Table -AutoSize
+
+      - name: Upload complete Windows release
+        uses: actions/upload-artifact@v4
+        with:
+          name: CODEOCEAN-Sales-Brain-v0.5-Windows
+          path: release/*
+          if-no-files-found: error
+          retention-days: 30
