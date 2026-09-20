@@ -5,7 +5,7 @@ on:
     branches:
       - codeocean-sales-brain-v0.6-desktop
     paths:
-      - "codeocean-sales-brain-build/**"
+      - "codeocean-sales-brain-app/**"
       - ".github/workflows/codeocean-sales-brain-v06-windows.yml"
   workflow_dispatch:
 
@@ -14,51 +14,42 @@ jobs:
     runs-on: windows-latest
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    defaults:
+      run:
+        working-directory: codeocean-sales-brain-app
     steps:
       - uses: actions/checkout@v4
-
-      - name: Restore source
-        shell: pwsh
-        run: |
-          $b64 = Get-Content "codeocean-sales-brain-build/source.b64" -Raw
-          [IO.File]::WriteAllBytes("sales-brain.zip", [Convert]::FromBase64String($b64.Trim()))
-          New-Item -ItemType Directory -Force "sales-brain" | Out-Null
-          Expand-Archive "sales-brain.zip" "sales-brain" -Force
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install dependencies
-        working-directory: sales-brain
         shell: pwsh
         run: npm install --no-audit --no-fund
 
       - name: Validate desktop app
-        working-directory: sales-brain
         shell: pwsh
         run: |
           node --check desktop/main.cjs
           node --check desktop/preload.cjs
 
       - name: Build Windows installer
-        working-directory: sales-brain
         shell: pwsh
         run: npm run dist:installer
 
       - name: Build Windows portable
-        working-directory: sales-brain
         shell: pwsh
         run: npm run dist:portable
 
       - name: Package release
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force "release" | Out-Null
-          Copy-Item "sales-brain/dist-electron/CODEOCEAN-Sales-Brain-Setup-0.6.0.exe" "release/" -Force
-          Copy-Item "sales-brain/dist-electron/CODEOCEAN-Sales-Brain-Portable-0.6.0.exe" "release/" -Force
-          Copy-Item "sales-brain.zip" "release/CODEOCEAN-Sales-Brain-v0.6-source.zip" -Force
-          Get-ChildItem release | Select-Object Name,Length | Format-Table -AutoSize
+          New-Item -ItemType Directory -Force "..\release" | Out-Null
+          Copy-Item "dist-electron\CODEOCEAN-Sales-Brain-Setup-0.6.0.exe" "..\release\" -Force
+          Copy-Item "dist-electron\CODEOCEAN-Sales-Brain-Portable-0.6.0.exe" "..\release\" -Force
+          Compress-Archive -Path "desktop","index.html","package.json","README.md" -DestinationPath "..\release\CODEOCEAN-Sales-Brain-v0.6-source.zip" -Force
+          Get-ChildItem "..\release" | Select-Object Name,Length | Format-Table -AutoSize
 
       - uses: actions/upload-artifact@v4
         with:
