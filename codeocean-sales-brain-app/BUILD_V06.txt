@@ -1,0 +1,1 @@
+Build trigger for direct Electron desktop source. No localhost.
