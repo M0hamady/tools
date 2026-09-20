@@ -1,0 +1,1 @@
+Trigger Windows desktop build for CODEOCEAN Sales Brain v0.6. No localhost. Electron desktop shell.
